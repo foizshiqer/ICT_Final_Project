@@ -34,6 +34,8 @@ public:
 
     std::ofstream output;
 
+    std::ofstream perstep;
+
     int centerX;
 
     int centerY;
@@ -42,7 +44,7 @@ public:
 
     void nextBlock();
 
-    void print(); // can use ansi escape code to print colored text if nessesary
+    void print(std::ofstream&); // can use ansi escape code to print colored text if nessesary
 
     void operate();
 

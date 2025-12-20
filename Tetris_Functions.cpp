@@ -1,6 +1,3 @@
-#ifndef Tetris_Functions
-#define Tetris_Functions
-
 #include <iostream>
 #include <fstream>
 #include <queue>
@@ -18,6 +15,9 @@ tetrisClass::tetrisClass()
 
     // tick
     tick = 1;
+
+    // angle
+    angle = 0;
 
     // i/o
     input.open("input.txt");
@@ -47,16 +47,7 @@ tetrisClass::tetrisClass()
 void tetrisClass::print(std::ofstream &stream)
 {
     stream << "SCORE: " << score << '\n';
-    1 ? 'a' : 'b';
-    stream << "GAME STATUS: ";
-    if (gameover)
-    {
-        stream << "GAME OVER\n";
-    }
-    else
-    {
-        stream << "IN PROGRESS\n";
-    }
+    stream << "GAME STATUS: " << (gameover ? "GAME OVER\n" : "IN PROGRESS\n");
     stream << "BOARD:\n";
 
     for (int y = 0; y < 20; y++)
@@ -64,16 +55,23 @@ void tetrisClass::print(std::ofstream &stream)
         stream << '#';
         for (int x = 0; x < 10; x++)
         {
+            char cell = board[y][x];
             bool isCurrent = false;
-            for (int idx = 0; idx < 4; idx++)
+
+            // 只有在方塊還沒鎖定時才顯示 currentTetromino
+            if (!locked)
             {
-                if (x == cbx[idx] && y == cby[idx])
+                for (int idx = 0; idx < 4; idx++)
                 {
-                    isCurrent = true;
-                    break;
+                    if (x == cbx[idx] && y == cby[idx])
+                    {
+                        isCurrent = true;
+                        break;
+                    }
                 }
             }
-            stream << (isCurrent ? currentTetromino : board[y][x]);
+
+            stream << (isCurrent ? currentTetromino : cell);
         }
         stream << "#\n";
     }
@@ -82,6 +80,7 @@ void tetrisClass::print(std::ofstream &stream)
 
 void tetrisClass::nextBlock()
 {
+    locked = false;
     if (seq.empty())
     {
         finished = true;
@@ -207,8 +206,109 @@ void tetrisClass::moveRight()
         cbx[idx]++;
 }
 
-void tetrisClass::rotate() // how to rotate?
+void tetrisClass::rotate()
 {
+    switch (currentTetromino)
+    {
+    case 'T':
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYT[angle][i] > 19 || cby[i] + rotateYT[angle][i] < 0 ||
+                cbx[i] + rotateXT[angle][i] > 9 || cbx[i] + rotateXT[angle][i] < 0 ||
+                board[cby[i] + rotateYT[angle][i]][cbx[i] + rotateXT[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYT[angle][i];
+            cbx[i] += rotateXT[angle][i];
+        }
+        break;
+
+    case 'L':
+        // Similar bounds + collision check
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYL[angle][i] > 19 || cby[i] + rotateYL[angle][i] < 0 ||
+                cbx[i] + rotateXL[angle][i] > 9 || cbx[i] + rotateXL[angle][i] < 0 ||
+                board[cby[i] + rotateYL[angle][i]][cbx[i] + rotateXL[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYL[angle][i];
+            cbx[i] += rotateXL[angle][i];
+        }
+        break;
+
+    case 'J':
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYJ[angle][i] > 19 || cby[i] + rotateYJ[angle][i] < 0 ||
+                cbx[i] + rotateXJ[angle][i] > 9 || cbx[i] + rotateXJ[angle][i] < 0 ||
+                board[cby[i] + rotateYJ[angle][i]][cbx[i] + rotateXJ[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYJ[angle][i];
+            cbx[i] += rotateXJ[angle][i];
+        }
+        break;
+
+    case 'Z':
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYZ[angle][i] > 19 || cby[i] + rotateYZ[angle][i] < 0 ||
+                cbx[i] + rotateXZ[angle][i] > 9 || cbx[i] + rotateXZ[angle][i] < 0 ||
+                board[cby[i] + rotateYZ[angle][i]][cbx[i] + rotateXZ[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYZ[angle][i];
+            cbx[i] += rotateXZ[angle][i];
+        }
+        break;
+
+    case 'S':
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYS[angle][i] > 19 || cby[i] + rotateYS[angle][i] < 0 ||
+                cbx[i] + rotateXS[angle][i] > 9 || cbx[i] + rotateXS[angle][i] < 0 ||
+                board[cby[i] + rotateYS[angle][i]][cbx[i] + rotateXS[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYS[angle][i];
+            cbx[i] += rotateXS[angle][i];
+        }
+        break;
+
+    case 'I':
+        for (int i = 0; i < 4; i++)
+        {
+            if (cby[i] + rotateYI[angle][i] > 19 || cby[i] + rotateYI[angle][i] < 0 ||
+                cbx[i] + rotateXI[angle][i] > 9 || cbx[i] + rotateXI[angle][i] < 0 ||
+                board[cby[i] + rotateYI[angle][i]][cbx[i] + rotateXI[angle][i]] != ' ')
+                return;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            cby[i] += rotateYI[angle][i];
+            cbx[i] += rotateXI[angle][i];
+        }
+        break;
+
+    case 'O':
+        // Square block doesn’t rotate
+        return;
+
+    default:
+        break;
+    }
+    angle = (angle + 1) % 4;
 }
 
 void tetrisClass::hardDrop()
@@ -256,9 +356,8 @@ void tetrisClass::gameEnd()
 {
     // maybe add some actions
     print(output);
-    print(perstep);
+    if (gameover)
+        print(perstep);
     input.close();
     output.close();
 }
-
-#endif

@@ -22,6 +22,7 @@ tetrisClass::tetrisClass()
     // i/o
     input.open("input.txt");
     output.open("output.txt");
+    perstep.open("output_detail.txt");
     std::cout << "123456\n";
 
     // blockSeq
@@ -43,24 +44,24 @@ tetrisClass::tetrisClass()
     finished = false;
 }
 
-void tetrisClass::print()
+void tetrisClass::print(std::ofstream &stream)
 {
-    output << "SCORE: " << score << '\n';
+    stream << "SCORE: " << score << '\n';
     1 ? 'a' : 'b';
-    output << "GAME STATUS: ";
+    stream << "GAME STATUS: ";
     if (gameover)
     {
-        output << "GAME OVER\n";
+        stream << "GAME OVER\n";
     }
     else
     {
-        output << "IN PROGRESS\n";
+        stream << "IN PROGRESS\n";
     }
-    output << "BOARD:\n";
+    stream << "BOARD:\n";
 
     for (int y = 0; y < 20; y++)
     {
-        output << '#';
+        stream << '#';
         for (int x = 0; x < 10; x++)
         {
             bool isCurrent = false;
@@ -72,11 +73,11 @@ void tetrisClass::print()
                     break;
                 }
             }
-            output << (isCurrent ? currentTetromino : board[y][x]);
+            stream << (isCurrent ? currentTetromino : board[y][x]);
         }
-        output << "#\n";
+        stream << "#\n";
     }
-    output << "############\n\n"; // 10 + 2 邊框
+    stream << "############\n\n"; // 10 + 2 邊框
 }
 
 void tetrisClass::nextBlock()
@@ -181,6 +182,7 @@ void tetrisClass::operate()
     default:
         output << "Error operator: " << op << '\n';
     }
+    print(perstep);
 }
 
 void tetrisClass::moveLeft()
@@ -253,7 +255,8 @@ void tetrisClass::lock()
 void tetrisClass::gameEnd()
 {
     // maybe add some actions
-    print();
+    print(output);
+    print(perstep);
     input.close();
     output.close();
 }

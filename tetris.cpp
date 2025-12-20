@@ -14,11 +14,13 @@ int main()
 
     while (!tetris.finished && getline(tetris.input, opLineString))
     {
-        tetris.print();
+        tetris.print(tetris.perstep); // detail
         std::stringstream opLineSS(opLineString);
         while (!tetris.finished && opLineSS >> tetris.op)
         {
             tetris.operate();
+            if (tetris.op == 'F')
+                break;
         }
 
         if (tetris.finished)

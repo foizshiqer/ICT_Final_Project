@@ -31,7 +31,11 @@ int main()
         {
         case INPUT:
         {
-            tetris.input.get(tetris.op);
+            if (!tetris.input.get(tetris.op)) // 不然最後一個指令會執行兩次
+            {
+                state = END;
+                break;
+            }
 
             // skip spaces
             while (tetris.op == ' ' && !tetris.input.eof()) // end with R^X not R_, if R\n then will fall
@@ -47,13 +51,16 @@ int main()
 
             tetris.operate();
 
-            // F -> 該行結束，後面不管
-            if (tetris.op == 'F')
+            if (tetris.op != 'F')
             {
-                while (tetris.op != '\n' && tetris.input.get(tetris.op))
-                    ;
-                state = LOCK;
+                // state = INPUT;
+                break;
             }
+
+            // F -> 該行結束，後面不管
+            while (tetris.op != '\n' && tetris.input.get(tetris.op))
+                ;
+            state = LOCK;
 
             break;
         }
@@ -82,7 +89,9 @@ int main()
         }
 
         case END:
+        {
             break;
+        }
 
         default:
         {

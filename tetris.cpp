@@ -10,19 +10,38 @@ int main()
     // initialize
     tetrisClass tetris;
 
-    std::string opLineString;
-
-    while (!tetris.finished && getline(tetris.input, opLineString))
+    tetris.print(tetris.perstep); // detail, initial status
+    while (!tetris.finished)
     {
-        tetris.print(tetris.perstep); // detail
-        std::stringstream opLineSS(opLineString);
-        while (!tetris.finished && opLineSS >> tetris.op)
+        while (!tetris.finished && tetris.input.get(tetris.op))
         {
+            while (tetris.op == ' ' && !tetris.input.eof())
+            {
+                tetris.input.get(tetris.op);
+            }
+            if (tetris.input.eof())
+            {
+                tetris.finished = true;
+                break;
+            }
+            if (tetris.op == '\n')
+            {
+                break;
+            }
             tetris.operate();
             if (tetris.op == 'F')
+            {
+                while (tetris.op != '\n')
+                    tetris.input.get(tetris.op);
                 break;
+            }
         }
 
+        if (tetris.input.eof())
+        {
+            tetris.finished = true;
+            break;
+        }
         if (tetris.finished)
         {
             break;
@@ -33,11 +52,7 @@ int main()
         if (!tetris.locked)
         {
             tetris.op = 'f';
-            tetris.operate();
-        }
-        else
-        {
-            tetris.nextBlock();
+            tetris.operate(); // fall
         }
         // fall
         // no more tetrominos -> finish
@@ -53,3 +68,5 @@ int main()
 
 // no lock delay?
 // try fall -> if fail -> lock
+
+// prints perstep after operation

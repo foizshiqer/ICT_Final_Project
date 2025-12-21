@@ -11,13 +11,15 @@ public:
 
     int score; // score
 
-    char op; // operator A/D/R/F
+    char op; // operator A/D/R/F and H
 
     int tick;
 
     std::queue<char> seq; // block/tetrimino sequence
 
     char currentTetromino;
+
+    char holdingTetromino;
 
     bool gameover;
 
@@ -41,11 +43,17 @@ public:
 
     bool locked;
 
+    bool holdCooldown;
+
+    bool holding;
+
     void nextBlock();
+
+    void initTetromino();
 
     void print(std::ofstream &); // can use ansi escape code to print colored text if nessesary
 
-    void operate();
+    void operate(); // hold is not included, only A/D/R/F and f
 
     void moveLeft(); // 'A'
 
@@ -56,6 +64,8 @@ public:
     void hardDrop(); // 'F', locks after this
 
     void fall(); // 1 tick, i.e. 1 line
+
+    void hold();
 
     void calcScore();
 
@@ -177,4 +187,5 @@ private:
     // ____
     const int spawnXO[4] = {4, 5, 5, 4};
     const int spawnYO[4] = {1, 1, 2, 2};
+    // no rotation for O
 };

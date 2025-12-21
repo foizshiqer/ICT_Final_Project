@@ -23,7 +23,6 @@ tetrisClass::tetrisClass()
     input.open("input.txt");
     output.open("output.txt");
     perstep.open("output_detail.txt");
-    std::cout << "123456\n";
 
     // blockSeq
     // how to start?
@@ -36,17 +35,22 @@ tetrisClass::tetrisClass()
         input >> temp;
         seq.push(temp);
     }
-    std::cout << (int)input.get();
+    input.get(); // \n
     nextBlock();
 
     // dead
     gameover = false;
     finished = false;
+
+    // hold
+    holding = false;
+    holdCooldown = false;
 }
 
 void tetrisClass::print(std::ofstream &stream)
 {
     stream << "SCORE: " << score << '\n';
+    stream << "TIME: " << tick << '\n';
     stream << "GAME STATUS: " << (gameover ? "GAME OVER\n" : "IN PROGRESS\n");
     stream << "BOARD:\n";
 
@@ -81,6 +85,7 @@ void tetrisClass::print(std::ofstream &stream)
 void tetrisClass::nextBlock()
 {
     locked = false;
+    angle = 0;
     if (seq.empty())
     {
         finished = true;
@@ -145,7 +150,74 @@ void tetrisClass::nextBlock()
     }
     for (int i = 0; i < 4; i++)
     {
-        if (board[cbx[i]][cby[i]] != ' ') // failed to generate
+        if (board[cby[i]][cbx[i]] != ' ') // failed to generate
+        {
+            finished = true;
+            gameover = true;
+            return;
+        }
+    }
+}
+
+void tetrisClass::initTetromino()
+{
+    switch (currentTetromino)
+    {
+    case 'T':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXT[i];
+            cby[i] = spawnYT[i];
+        }
+        break;
+    case 'L':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXL[i];
+            cby[i] = spawnYL[i];
+        }
+        break;
+    case 'J':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXJ[i];
+            cby[i] = spawnYJ[i];
+        }
+        break;
+    case 'Z':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXZ[i];
+            cby[i] = spawnYZ[i];
+        }
+        break;
+    case 'S':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXS[i];
+            cby[i] = spawnYS[i];
+        }
+        break;
+    case 'I':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXI[i];
+            cby[i] = spawnYI[i];
+        }
+        break;
+    case 'O':
+        for (int i = 0; i < 4; i++)
+        {
+            cbx[i] = spawnXO[i];
+            cby[i] = spawnYO[i];
+        }
+        break;
+    default:
+        break;
+    }
+    for (int i = 0; i < 4; i++)
+    {
+        if (board[cby[i]][cbx[i]] != ' ') // failed to generate
         {
             finished = true;
             gameover = true;
@@ -179,9 +251,8 @@ void tetrisClass::operate()
         break;
 
     default:
-        output << "Error operator: " << op << '\n';
+        std::cout << "Error operator: " << op << '\n';
     }
-    print(perstep);
 }
 
 void tetrisClass::moveLeft()
@@ -193,6 +264,7 @@ void tetrisClass::moveLeft()
     }
     for (int idx = 0; idx < 4; idx++)
         cbx[idx]--;
+    print(perstep);
 }
 
 void tetrisClass::moveRight()
@@ -204,6 +276,7 @@ void tetrisClass::moveRight()
     }
     for (int idx = 0; idx < 4; idx++)
         cbx[idx]++;
+    print(perstep);
 }
 
 void tetrisClass::rotate()
@@ -303,18 +376,22 @@ void tetrisClass::rotate()
 
     case 'O':
         // Square block doesn’t rotate
-        return;
+        break;
 
     default:
         break;
     }
     angle = (angle + 1) % 4;
+    print(perstep);
 }
 
 void tetrisClass::hardDrop()
 {
     while (!isfell())
-        fall();
+    {
+        for (int idx = 0; idx < 4; idx++)
+            cby[idx]++;
+    }
     lock();
 }
 
@@ -323,23 +400,104 @@ void tetrisClass::fall()
     if (isfell())
     {
         lock();
+        return;
     }
     else
     {
         for (int idx = 0; idx < 4; idx++)
             cby[idx]++;
+        print(perstep);
     }
+}
+
+void tetrisClass::hold()
+{
+    if (holdCooldown)
+        return;
+
+    holdCooldown = true;
+    if (holding)
+    {
+        char temp = currentTetromino;
+        currentTetromino = holdingTetromino;
+        holdingTetromino = temp;
+        initTetromino(); // 初始化 current 的位置
+    }
+    else
+    {
+        holding = true;
+        holdingTetromino = currentTetromino;
+        nextBlock(); // 取下一個方塊
+    }
+    print(perstep);
 }
 
 void tetrisClass::calcScore()
 {
+    int deleteLines = 0;
+    for (int i = 0; i < 20; i++)
+    {
+        bool canClear = true;
+        for (int j = 0; j < 10; j++)
+        {
+            if (board[i][j] == ' ')
+            {
+                canClear = false;
+                break;
+            }
+        }
+
+        if (canClear)
+        {
+            if (deleteLines == 0)
+            {
+                print(perstep); // print board before clearing
+            }
+
+            for (int j = i; j > 0; j++)
+            {
+                for (int k = 0; k < 10; k++)
+                {
+                    board[j][k] = board[j - 1][k];
+                }
+            }
+            for (int j = 0; j < 10; j++)
+            {
+                board[0][j] = ' ';
+            }
+
+            deleteLines++;
+        }
+    }
+
+    switch (deleteLines)
+    {
+    case 0:
+        break;
+    case 1:
+        score += 100;
+        break;
+    case 2:
+        score += 300;
+        break;
+    case 3:
+        score += 500;
+        break;
+    case 4:
+        score += 800;
+        break;
+    default:
+        break;
+    }
 }
 
 bool tetrisClass::isfell()
 {
     for (int idx = 0; idx < 4; idx++)
     {
-        if (cby[idx] == 19 || board[cby[idx] + 1][cbx[idx]] != ' ')
+        if (cby[idx] >= 19 || cby[idx] < 0)
+            return true;
+        if (board[cby[idx] + 1][cbx[idx]] != ' ')
             return true;
     }
     return false;
@@ -348,8 +506,22 @@ bool tetrisClass::isfell()
 void tetrisClass::lock()
 {
     locked = true;
+    holdCooldown = false;
+    for (int i = 0; i < 4; i++)
+    {
+        if (cby[i] > 19 || cby[i] < 0 || cbx[i] > 9 || cbx[i] < 0)
+        {
+            std::cout << "ERROR!";
+            exit(1);
+        }
+    }
     for (int i = 0; i < 4; i++)
         board[cby[i]][cbx[i]] = currentTetromino;
+
+    print(perstep);
+
+    calcScore();
+    nextBlock(); // should i put this here or in main -> if (!tetris.locked) else{ here } ?
 }
 
 void tetrisClass::gameEnd()

@@ -13,9 +13,6 @@ tetrisClass::tetrisClass()
     // score
     score = 0;
 
-    // tick
-    tick = 1;
-
     // angle
     angle = 0;
 
@@ -37,7 +34,9 @@ tetrisClass::tetrisClass()
         input >> temp;
         seq.push(temp);
     }
-    input.get(); // \n = 10
+    
+    // std::cout << input.get();
+    input.ignore(); // \n = 10
     nextBlock();
 
     // dead
@@ -46,13 +45,13 @@ tetrisClass::tetrisClass()
     // hold
     holding = false;
     holdCooldown = false;
+
+    print(perstep); // print initial state
 }
 
 void tetrisClass::print(std::ofstream &stream)
 {
     stream << "SCORE: " << score << '\n';
-    stream << "TIME: " << tick << '\n';
-    stream << "OPERATION: " << op << '\n';
     stream << "GAME STATUS: " << (gameover ? "GAME OVER\n" : "IN PROGRESS\n");
     stream << "BOARD:\n";
 
@@ -552,8 +551,7 @@ void tetrisClass::gameEnd()
 {
     // maybe add some actions
     print(output);
-    if (gameover)
-        print(perstep);
+    // already printed to perstep
     input.close();
     output.close();
 }

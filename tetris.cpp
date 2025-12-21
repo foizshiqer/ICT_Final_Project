@@ -5,47 +5,96 @@
 #include <sstream>
 #include "Tetris_Class.h"
 
+enum class GameState // 把狀況全部存進state
+{
+    INPUT, // 讀 input 指令
+    FALL,  // 自動下落
+    LOCK,  // 方塊剛被鎖定
+    END    // 遊戲結束
+};
+
 int main()
 {
-    // initialize
     tetrisClass tetris;
+    GameState state = GameState::INPUT;
 
-    std::string opLineString;
+    tetris.print(tetris.perstep); // initial state
 
-    while (!tetris.finished && getline(tetris.input, opLineString))
+    while (state != GameState::END)
     {
-        tetris.print(tetris.perstep); // detail
-        std::stringstream opLineSS(opLineString);
-        while (!tetris.finished && opLineSS >> tetris.op)
+        // 結束條件統一判斷
+        if (tetris.shouldFinish())
         {
-            tetris.operate();
-            if (tetris.op == 'F')
-                break;
-        }
-
-        if (tetris.finished)
-        {
+            state = GameState::END;
             break;
         }
 
-        tetris.tick++;
-        // should be at next tick
-        if (!tetris.locked)
+        switch (state)
         {
+        case GameState::INPUT:
+        {
+            // 嘗試讀一個 input 指令
+            if (tetris.input.get(tetris.op))
+            {
+                // skip spaces
+                while (tetris.op == ' ' && !tetris.input.eof())
+                    tetris.input.get(tetris.op);
+
+                if (tetris.op == '\n')
+                {
+                    state = GameState::FALL;
+                    break;
+                }
+
+                tetris.operate();
+
+                // F -> 該行結束
+                if (tetris.op == 'F')
+                {
+                    while (tetris.op != '\n' && tetris.input.get(tetris.op))
+                        ;
+                    state = GameState::LOCK;
+                }
+            }
+            else
+            {
+                // input 用完，進入自動下落
+                state = GameState::FALL;
+            }
+            break;
+        }
+
+        case GameState::FALL:
+        {
+            tetris.tick++;
             tetris.op = 'f';
             tetris.operate();
+
+            if (tetris.locked)
+                state = GameState::LOCK;
+            else
+                state = GameState::INPUT;
+
+            break;
         }
-        else
+
+        case GameState::LOCK:
         {
+            // LOCK後生成新方塊
             tetris.nextBlock();
+            tetris.print(tetris.perstep);
+
+            state = GameState::INPUT;
+            break;
         }
-        // fall
-        // no more tetrominos -> finish
-        // fall -> newBlock if lock
+
+        case GameState::END:
+            break;
+        }
     }
 
-    // game over
     tetris.gameEnd();
+    return 0;
 }
 // not like this : operation -> if fell -> next block -> no next -> end
 // tick end / next tick -> fall -> if fell -> determine if die
@@ -53,3 +102,5 @@ int main()
 
 // no lock delay?
 // try fall -> if fail -> lock
+
+// prints perstep after operation

@@ -11,7 +11,7 @@ public:
 
     int score; // score
 
-    char op; // operator A/D/R/F
+    char op; // operator A/D/R/F and H
 
     int tick;
 
@@ -19,9 +19,9 @@ public:
 
     char currentTetromino;
 
-    bool gameover;
+    char holdingTetromino;
 
-    bool finished;
+    bool gameover;
 
     int cbx[4]; // idx 0 - 3 for 4 block in current tetromino
 
@@ -41,11 +41,17 @@ public:
 
     bool locked;
 
+    bool holdCooldown;
+
+    bool holding;
+
     void nextBlock();
+
+    void initTetromino();
 
     void print(std::ofstream &); // can use ansi escape code to print colored text if nessesary
 
-    void operate();
+    void operate(); // hold is not included, only A/D/R/F and f
 
     void moveLeft(); // 'A'
 
@@ -57,11 +63,15 @@ public:
 
     void fall(); // 1 tick, i.e. 1 line
 
+    void hold();
+
     void calcScore();
 
     bool isfell();
 
     void lock(); // lock -> nextBlock
+
+    bool shouldFinish();
 
     void gameEnd();
 
@@ -177,4 +187,5 @@ private:
     // ____
     const int spawnXO[4] = {4, 5, 5, 4};
     const int spawnYO[4] = {1, 1, 2, 2};
+    // no rotation for O
 };

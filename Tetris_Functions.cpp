@@ -19,6 +19,8 @@ tetrisClass::tetrisClass()
     // angle
     angle = 0;
 
+    op = '0'; // no need
+
     // i/o
     input.open("input.txt");
     output.open("output.txt");
@@ -35,12 +37,11 @@ tetrisClass::tetrisClass()
         input >> temp;
         seq.push(temp);
     }
-    input.get(); // \n
+    input.get(); // \n = 10
     nextBlock();
 
     // dead
     gameover = false;
-    finished = false;
 
     // hold
     holding = false;
@@ -51,6 +52,7 @@ void tetrisClass::print(std::ofstream &stream)
 {
     stream << "SCORE: " << score << '\n';
     stream << "TIME: " << tick << '\n';
+    stream << "OPERATION: " << op << '\n';
     stream << "GAME STATUS: " << (gameover ? "GAME OVER\n" : "IN PROGRESS\n");
     stream << "BOARD:\n";
 
@@ -88,7 +90,6 @@ void tetrisClass::nextBlock()
     angle = 0;
     if (seq.empty())
     {
-        finished = true;
         return;
     }
     currentTetromino = seq.front();
@@ -152,7 +153,6 @@ void tetrisClass::nextBlock()
     {
         if (board[cby[i]][cbx[i]] != ' ') // failed to generate
         {
-            finished = true;
             gameover = true;
             return;
         }
@@ -219,7 +219,6 @@ void tetrisClass::initTetromino()
     {
         if (board[cby[i]][cbx[i]] != ' ') // failed to generate
         {
-            finished = true;
             gameover = true;
             return;
         }
@@ -244,6 +243,10 @@ void tetrisClass::operate()
 
     case 'F':
         hardDrop();
+        break;
+
+    case 'H':
+        hold();
         break;
 
     case 'f':
@@ -387,8 +390,10 @@ void tetrisClass::rotate()
 
 void tetrisClass::hardDrop()
 {
-    while (!isfell())
+    while (true)
     {
+        if (isfell())
+            break;
         for (int idx = 0; idx < 4; idx++)
             cby[idx]++;
     }
@@ -413,7 +418,9 @@ void tetrisClass::fall()
 void tetrisClass::hold()
 {
     if (holdCooldown)
+    {
         return;
+    }
 
     holdCooldown = true;
     if (holding)
@@ -435,7 +442,7 @@ void tetrisClass::hold()
 void tetrisClass::calcScore()
 {
     int deleteLines = 0;
-    for (int i = 0; i < 20; i++)
+    for (int i = 19; i >= 0;)
     {
         bool canClear = true;
         for (int j = 0; j < 10; j++)
@@ -454,19 +461,24 @@ void tetrisClass::calcScore()
                 print(perstep); // print board before clearing
             }
 
-            for (int j = i; j > 0; j++)
+            for (int r = i; r > 0; r--)
             {
-                for (int k = 0; k < 10; k++)
+                for (int c = 0; c < 10; c++)
                 {
-                    board[j][k] = board[j - 1][k];
+                    board[r][c] = board[r - 1][c];
                 }
             }
-            for (int j = 0; j < 10; j++)
+            for (int c = 0; c < 10; c++)
             {
-                board[0][j] = ' ';
+                board[0][c] = ' ';
             }
 
             deleteLines++;
+            // 重新檢查同一行
+        }
+        else
+        {
+            i--; // 往上
         }
     }
 
@@ -495,7 +507,9 @@ bool tetrisClass::isfell()
 {
     for (int idx = 0; idx < 4; idx++)
     {
-        if (cby[idx] >= 19 || cby[idx] < 0)
+        if (cby[idx] < 0 || cbx[idx] < 0 || cbx[idx] >= 10)
+            return true;
+        if (cby[idx] >= 19)
             return true;
         if (board[cby[idx] + 1][cbx[idx]] != ' ')
             return true;
@@ -507,21 +521,31 @@ void tetrisClass::lock()
 {
     locked = true;
     holdCooldown = false;
-    for (int i = 0; i < 4; i++)
-    {
-        if (cby[i] > 19 || cby[i] < 0 || cbx[i] > 9 || cbx[i] < 0)
-        {
-            std::cout << "ERROR!";
-            exit(1);
-        }
-    }
+
     for (int i = 0; i < 4; i++)
         board[cby[i]][cbx[i]] = currentTetromino;
 
     print(perstep);
 
     calcScore();
-    nextBlock(); // should i put this here or in main -> if (!tetris.locked) else{ here } ?
+    // should i put this here or in main -> if (!tetris.locked) else{ here } ? -> put in main
+}
+
+bool tetrisClass::shouldFinish()
+{
+    // 1. gameover
+    if (gameover)
+        return true;
+
+    // 2. input 指令用完
+    if (input.eof())
+        return true;
+
+    // 3. seq 用完 + 已 lock
+    if (seq.empty() && locked)
+        return true;
+
+    return false;
 }
 
 void tetrisClass::gameEnd()

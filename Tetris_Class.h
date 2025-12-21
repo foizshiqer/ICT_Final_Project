@@ -23,8 +23,6 @@ public:
 
     bool gameover;
 
-    bool finished;
-
     int cbx[4]; // idx 0 - 3 for 4 block in current tetromino
 
     int cby[4];
@@ -72,6 +70,8 @@ public:
     bool isfell();
 
     void lock(); // lock -> nextBlock
+
+    bool shouldFinish();
 
     void gameEnd();
 

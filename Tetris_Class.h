@@ -13,8 +13,6 @@ public:
 
     char op; // operator A/D/R/F and H
 
-    int tick;
-
     std::queue<char> seq; // block/tetrimino sequence
 
     char currentTetromino;
@@ -33,10 +31,6 @@ public:
 
     std::ofstream perstep;
 
-    int centerX;
-
-    int centerY;
-
     int angle;
 
     bool locked;
@@ -51,7 +45,7 @@ public:
 
     void print(std::ofstream &); // can use ansi escape code to print colored text if nessesary
 
-    void operate(); // hold is not included, only A/D/R/F and f
+    void operate(); // hold is included with A/D/R/F and f
 
     void moveLeft(); // 'A'
 
@@ -63,7 +57,7 @@ public:
 
     void fall(); // 1 tick, i.e. 1 line
 
-    void hold();
+    void hold(); // 'H', with hold cooldown
 
     void calcScore();
 

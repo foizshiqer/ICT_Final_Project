@@ -28,15 +28,17 @@ tetrisClass::tetrisClass()
     // use nextBlock
     int n;
     input >> n;
-    for (int i = 0; i < n; i++)
-    {
-        char temp;
-        input >> temp;
-        seq.push(temp);
-    }
-    
-    // std::cout << input.get();
+    char temp;
     input.ignore(); // \n = 10
+    while (input.get(temp) && temp != '\n')
+    {
+        if (temp != ' ')
+        {
+            seq.push(temp);
+        }
+    }
+    // std::cout << input.get();
+
     nextBlock();
 
     // dead
@@ -158,8 +160,9 @@ void tetrisClass::nextBlock()
     }
 }
 
-void tetrisClass::initTetromino()
+void tetrisClass::initTetromino() // why not just combine this into nextBlock?
 {
+    angle = 0;
     switch (currentTetromino)
     {
     case 'T':
@@ -253,7 +256,7 @@ void tetrisClass::operate()
         break;
 
     default:
-        std::cout << "Error operator: " << op << '\n';
+        std::cout << "Error operator: " << op << '\n'; // e.g. n and actual tetromino number dont match
     }
 }
 
@@ -265,7 +268,9 @@ void tetrisClass::moveLeft()
             return;
     }
     for (int idx = 0; idx < 4; idx++)
+    {
         cbx[idx]--;
+    }
     print(perstep);
 }
 
@@ -274,7 +279,9 @@ void tetrisClass::moveRight()
     for (int idx = 0; idx < 4; idx++)
     {
         if (cbx[idx] == 9 || board[cby[idx]][cbx[idx] + 1] != ' ')
+        {
             return;
+        }
     }
     for (int idx = 0; idx < 4; idx++)
         cbx[idx]++;
@@ -291,7 +298,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYT[angle][i] > 19 || cby[i] + rotateYT[angle][i] < 0 ||
                 cbx[i] + rotateXT[angle][i] > 9 || cbx[i] + rotateXT[angle][i] < 0 ||
                 board[cby[i] + rotateYT[angle][i]][cbx[i] + rotateXT[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -307,7 +316,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYL[angle][i] > 19 || cby[i] + rotateYL[angle][i] < 0 ||
                 cbx[i] + rotateXL[angle][i] > 9 || cbx[i] + rotateXL[angle][i] < 0 ||
                 board[cby[i] + rotateYL[angle][i]][cbx[i] + rotateXL[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -322,7 +333,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYJ[angle][i] > 19 || cby[i] + rotateYJ[angle][i] < 0 ||
                 cbx[i] + rotateXJ[angle][i] > 9 || cbx[i] + rotateXJ[angle][i] < 0 ||
                 board[cby[i] + rotateYJ[angle][i]][cbx[i] + rotateXJ[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -337,7 +350,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYZ[angle][i] > 19 || cby[i] + rotateYZ[angle][i] < 0 ||
                 cbx[i] + rotateXZ[angle][i] > 9 || cbx[i] + rotateXZ[angle][i] < 0 ||
                 board[cby[i] + rotateYZ[angle][i]][cbx[i] + rotateXZ[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -352,7 +367,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYS[angle][i] > 19 || cby[i] + rotateYS[angle][i] < 0 ||
                 cbx[i] + rotateXS[angle][i] > 9 || cbx[i] + rotateXS[angle][i] < 0 ||
                 board[cby[i] + rotateYS[angle][i]][cbx[i] + rotateXS[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -367,7 +384,9 @@ void tetrisClass::rotate()
             if (cby[i] + rotateYI[angle][i] > 19 || cby[i] + rotateYI[angle][i] < 0 ||
                 cbx[i] + rotateXI[angle][i] > 9 || cbx[i] + rotateXI[angle][i] < 0 ||
                 board[cby[i] + rotateYI[angle][i]][cbx[i] + rotateXI[angle][i]] != ' ')
+            {
                 return;
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -424,10 +443,10 @@ void tetrisClass::hold()
     holdCooldown = true;
     if (holding)
     {
-        char temp = currentTetromino;
+        char temp = currentTetromino; // swap(current, holding)
         currentTetromino = holdingTetromino;
         holdingTetromino = temp;
-        initTetromino(); // 初始化 current 的位置
+        initTetromino(); // 初始化 currentTetromino 的位置
     }
     else
     {
@@ -441,6 +460,8 @@ void tetrisClass::hold()
 void tetrisClass::calcScore()
 {
     int deleteLines = 0;
+    bool continuous = false; // 要計算連續消行
+    bool printed = false;
     for (int i = 19; i >= 0;)
     {
         bool canClear = true;
@@ -455,8 +476,10 @@ void tetrisClass::calcScore()
 
         if (canClear)
         {
-            if (deleteLines == 0)
+            continuous = true;
+            if (!printed)
             {
+                printed = true;
                 print(perstep); // print board before clearing
             }
 
@@ -477,28 +500,35 @@ void tetrisClass::calcScore()
         }
         else
         {
+            deleteLines = 0;
+            continuous = false;
             i--; // 往上
         }
-    }
-
-    switch (deleteLines)
-    {
-    case 0:
-        break;
-    case 1:
-        score += 100;
-        break;
-    case 2:
-        score += 300;
-        break;
-    case 3:
-        score += 500;
-        break;
-    case 4:
-        score += 800;
-        break;
-    default:
-        break;
+        
+        if (continuous)
+        {
+            switch (deleteLines)
+            {
+            case 0:
+                break;
+            case 1:
+                score += 100;
+                break;
+            case 2:
+                score += 300;
+                break;
+            case 3:
+                score += 500;
+                break;
+            case 4:
+                score += 800;
+                break;
+            default:
+                std::cout << "Error clearing: " << deleteLines << '\n';
+                perstep << "Error clearing: " << deleteLines << '\n';
+                break;
+            }
+        }
     }
 }
 
@@ -506,12 +536,10 @@ bool tetrisClass::isfell()
 {
     for (int idx = 0; idx < 4; idx++)
     {
-        if (cby[idx] < 0 || cbx[idx] < 0 || cbx[idx] >= 10)
+        if (cby[idx] >= 19 || board[cby[idx] + 1][cbx[idx]] != ' ')
+        {
             return true;
-        if (cby[idx] >= 19)
-            return true;
-        if (board[cby[idx] + 1][cbx[idx]] != ' ')
-            return true;
+        }
     }
     return false;
 }
@@ -522,27 +550,23 @@ void tetrisClass::lock()
     holdCooldown = false;
 
     for (int i = 0; i < 4; i++)
+    {
         board[cby[i]][cbx[i]] = currentTetromino;
+    }
 
     print(perstep);
 
     calcScore();
-    // should i put this here or in main -> if (!tetris.locked) else{ here } ? -> put in main
+    // should i put nextBlock() here or in main -> if (!tetris.locked) else{ here } ? -> put in main
 }
 
 bool tetrisClass::shouldFinish()
 {
-    // 1. gameover
-    if (gameover)
+    // gameover || input 用完 || (seq 用完 && 已 lock)
+    if (gameover || input.eof() || (seq.empty() && locked))
+    {
         return true;
-
-    // 2. input 指令用完
-    if (input.eof())
-        return true;
-
-    // 3. seq 用完 + 已 lock
-    if (seq.empty() && locked)
-        return true;
+    }
 
     return false;
 }

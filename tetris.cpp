@@ -2,15 +2,14 @@
 #include <fstream>
 #include <queue>
 #include <string>
-#include <sstream>
 #include "Tetris_Class.h"
 
-enum GameState // 把狀況全部存進state
+enum GameState // 把狀態存成 state, 然後就好了???
 {
-    INPUT, // 讀 input 指令
-    FALL,  // 自動下落
-    LOCK,  // 方塊剛被鎖定
-    END    // 遊戲結束
+    INPUT,
+    FALL,
+    LOCK,
+    END
 };
 
 int main()
@@ -20,7 +19,8 @@ int main()
 
     while (state != END)
     {
-        // 結束條件統一判斷
+        // 結束條件統一判斷，不然會炸
+        // 不要用 finished
         if (tetris.shouldFinish())
         {
             state = END;
@@ -31,7 +31,6 @@ int main()
         {
         case INPUT:
         {
-            // 讀 input 指令
             tetris.input.get(tetris.op);
 
             // skip spaces
@@ -40,7 +39,7 @@ int main()
                 tetris.input.get(tetris.op);
             }
 
-            if (tetris.op == '\n') // 一行 input 讀完 -> 下落
+            if (tetris.op == '\n') // 一行 input 讀完 -> fall
             {
                 state = FALL;
                 break;
@@ -74,7 +73,7 @@ int main()
 
         case LOCK:
         {
-            // LOCK後生成新方塊
+            // LOCK 之後生成新方塊
             tetris.nextBlock();
             tetris.print(tetris.perstep);
 

@@ -429,7 +429,6 @@ void tetrisClass::fall()
     {
         for (int idx = 0; idx < 4; idx++)
             cby[idx]++;
-        print(perstep);
     }
 }
 
@@ -480,7 +479,8 @@ void tetrisClass::calcScore()
             if (!printed)
             {
                 printed = true;
-                print(perstep); // print board before clearing
+                // print(perstep); // print board before clearing
+                // print 過了
             }
 
             for (int r = i; r > 0; r--)
@@ -528,6 +528,10 @@ void tetrisClass::calcScore()
                 perstep << "Error clearing: " << deleteLines << '\n';
                 break;
             }
+        }
+        if (deleteLines)
+        {
+            print(perstep);
         }
     }
 }

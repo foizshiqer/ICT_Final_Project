@@ -4,7 +4,7 @@
 #include <string>
 #include "Tetris_Class.h"
 
-enum GameState // 把狀態存成 state, 然後就好了???
+enum GameState // 把狀態存成 state, 不然太亂了
 {
     INPUT,
     FALL,

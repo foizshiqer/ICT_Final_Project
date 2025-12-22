@@ -65,7 +65,7 @@ int main()
             break;
         }
 
-        case FALL:
+        case FALL: // '\n'
         {
             tetris.op = 'f';
             tetris.operate();
@@ -76,12 +76,14 @@ int main()
             }
             else
             {
-                if (tetris.input.eof() || tetris.input.peek() == '\n')
+                if (!tetris.fallPrinted)
                 {
                     tetris.print(tetris.perstep);
                 }
                 state = INPUT;
             }
+
+            tetris.fallPrinted = false;
 
             break;
         }

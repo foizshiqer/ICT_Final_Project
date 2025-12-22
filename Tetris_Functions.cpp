@@ -18,6 +18,8 @@ tetrisClass::tetrisClass()
 
     op = '0'; // no need
 
+    fallPrinted = true; // initial no fall
+
     // i/o
     input.open("input.txt");
     output.open("output.txt");
@@ -271,6 +273,7 @@ void tetrisClass::moveLeft()
     {
         cbx[idx]--;
     }
+    fallPrinted = true;
     print(perstep);
 }
 
@@ -284,7 +287,10 @@ void tetrisClass::moveRight()
         }
     }
     for (int idx = 0; idx < 4; idx++)
+    {
         cbx[idx]++;
+    }
+    fallPrinted = true;
     print(perstep);
 }
 
@@ -403,6 +409,7 @@ void tetrisClass::rotate()
         break;
     }
     angle = (angle + 1) % 4;
+    fallPrinted = true;
     print(perstep);
 }
 
@@ -504,7 +511,7 @@ void tetrisClass::calcScore()
             continuous = false;
             i--; // 往上
         }
-        
+
         if (continuous)
         {
             switch (deleteLines)
@@ -579,7 +586,10 @@ void tetrisClass::gameEnd()
 {
     // maybe add some actions
     print(output);
-    // already printed to perstep
+    if (!fallPrinted)
+    {
+        print(perstep);
+    }
     input.close();
     output.close();
 }

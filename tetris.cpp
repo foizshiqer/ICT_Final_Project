@@ -71,9 +71,17 @@ int main()
             tetris.operate();
 
             if (tetris.locked)
+            {
                 state = LOCK;
+            }
             else
+            {
+                if (tetris.input.eof() || tetris.input.peek() == '\n')
+                {
+                    tetris.print(tetris.perstep);
+                }
                 state = INPUT;
+            }
 
             break;
         }

@@ -19,6 +19,8 @@ public:
 
     char holdingTetromino;
 
+    bool fallPrinted;
+
     bool gameover;
 
     int cbx[4]; // idx 0 - 3 for 4 block in current tetromino

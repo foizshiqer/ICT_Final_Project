@@ -273,8 +273,6 @@ void tetrisClass::moveLeft()
     {
         cbx[idx]--;
     }
-    fallPrinted = true;
-    print(perstep);
 }
 
 void tetrisClass::moveRight()
@@ -290,8 +288,6 @@ void tetrisClass::moveRight()
     {
         cbx[idx]++;
     }
-    fallPrinted = true;
-    print(perstep);
 }
 
 void tetrisClass::rotate()
@@ -409,8 +405,6 @@ void tetrisClass::rotate()
         break;
     }
     angle = (angle + 1) % 4;
-    fallPrinted = true;
-    print(perstep);
 }
 
 void tetrisClass::hardDrop()
@@ -422,7 +416,6 @@ void tetrisClass::hardDrop()
         for (int idx = 0; idx < 4; idx++)
             cby[idx]++;
     }
-    lock();
 }
 
 void tetrisClass::fall()
@@ -460,7 +453,6 @@ void tetrisClass::hold()
         holdingTetromino = currentTetromino;
         nextBlock(); // 取下一個方塊
     }
-    print(perstep);
 }
 
 void tetrisClass::calcScore()
@@ -565,8 +557,6 @@ void tetrisClass::lock()
         board[cby[i]][cbx[i]] = currentTetromino;
     }
 
-    print(perstep);
-
     calcScore();
     // should i put nextBlock() here or in main -> if (!tetris.locked) else{ here } ? -> put in main
 }
@@ -586,10 +576,10 @@ void tetrisClass::gameEnd()
 {
     // maybe add some actions
     print(output);
-    if (!fallPrinted)
+    /* if (!fallPrinted)
     {
         print(perstep);
-    }
+    } */
     input.close();
     output.close();
 }

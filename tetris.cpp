@@ -50,6 +50,8 @@ int main()
             }
 
             tetris.operate();
+            tetris.print(tetris.perstep);
+            tetris.fallPrinted = true;
 
             if (tetris.op != 'F')
             {
@@ -60,6 +62,7 @@ int main()
             // F -> 該行結束，後面不管
             while (tetris.op != '\n' && tetris.input.get(tetris.op))
                 ;
+            tetris.lock();
             state = LOCK;
 
             break;
